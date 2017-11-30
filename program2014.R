@@ -131,6 +131,7 @@ table(core$totalParticipant)
 table(core$totalClass)
 
 ################################################
+library(lubridate)
 
 program <- read.csv("~/Downloads/smpPro.csv")
 summary(program)
@@ -144,6 +145,12 @@ program$mem_id <- as.factor(program$mem_id)
 program$act_mainpt <- as.factor(program$act_mainpt)
 program$act_target <- as.factor(program$act_target)
 program$ppl_martial <- as.factor(program$ppl_martial)
+program$year <- year(program$act_sdate)
+program$month <- month(program$act_sdate)
+head(program)
+
+
+
 str(program)
 table(program$act_core)
 programCore <- subset(program, 
@@ -288,8 +295,108 @@ program %>%
 
 #member as id
 library(reshape2)
-member <- reshape(program, idvar = "mem_id", timevar = "act_sdate", direction = "wide")
 head(member)
-member <- reshape(program, idvar="mem_id")
+summary(program)
+#member <- reshape(program, idvar="mem_id", timevar = "year", direction = "wide")
+#member <-dcast(program, mem_id year + month ~ variable)
+# member <- dcast(program, mem_id + joint_days + ppl_id + ppl_age + ppl_edu + ppl_wkstatus +
+#         ppl_martial + center_id + mem_cssa + active_mem + active_mem + days_to_expiry +
+#         distance ~ year + month  , fun.aggregate = sum, 
+#       na.rm = TRUE)
+program$yearMonth <- as.factor(paste(as.character(program$year),as.character(program$month)))
+
+member <- dcast(program, mem_id ~ yearMonth + act_core )
 unique(member$mem_id)
+subset(program, mem_id == "333208800")
 table(is.na(member$mem_id) == TRUE)
+
+library(rpart)
+frmla = mem_id ~ .
+fit = rpart(frmla, method="class", data=member)
+
+
+printcp(fit) # display the results
+plotcp(fit) # visualize cross-validation results
+summary(fit) # detailed summary of splits
+
+# plot tree
+plot(fit, uniform=TRUE, main="Classification Tree for Chemicals")
+text(fit, use.n=TRUE, all=TRUE, cex=.8)
+
+# tabulate some of the data
+table(subset(raw, Koc>=190.5)$Metal)
+
+library(tree)
+
+tr = tree(frmla, data=member)
+summary(tr)
+plot(tr); text(tr)
+
+###############
+## OBLIQUE.TREE
+library(oblique.tree)
+
+aug.crabs.data = data.frame( g=factor(rep(1:4,each=50)),
+                             predict(princomp(crabs[,4:8]))[,2:3])
+plot(aug.crabs.data[,-1],type="n")
+text( aug.crabs.data[,-1], col=as.numeric(aug.crabs.data[,1]), labels=as.numeric(aug.crabs.data[,1]))
+ob.tree = oblique.tree(formula = g~.,
+                       data = aug.crabs.data,
+                       oblique.splits = "only")
+plot(ob.tree);text(ob.tree)
+
+##################
+##longRPart
+library(longRPart)
+
+data(pbkphData)
+pbkphData$Time=as.factor(pbkphData$Time)
+long.tree = longRPart(pbkph~Time,~age+gender,~1|Subject,pbkphData,R=corExp(form=~time))
+lrpTreePlot(long.tree, use.n=TRE, place="bottomright")
+
+###############
+# PARTY package
+library(party)
+
+(ct = ctree(frmla, data = member))
+plot(ct, main="Conditional Inference Tree")
+
+#Table of prediction errors
+table(predict(ct), raw$Metal)
+
+# Estimated class probabilities
+tr.pred = predict(ct, newdata=raw, type="prob")
+
+library(cluster) # Needed for silhouette function
+
+kmeansDat <- member[,]  # Extract only customer columns
+kmeansDat <- member[,-(1:1)]  # Extract only customer columns
+
+kmeansDat.t <- t(kmeansDat)  # Get customers in rows and products in columns
+
+# Setup for k-means loop 
+km.out <- list()
+sil.out <- list()
+x <- vector()
+y <- vector()
+minClust <- 4      # Hypothesized minimum number of segments
+maxClust <- 52      # Hypothesized maximum number of segments
+
+# Compute k-means clustering over various clusters, k, from minClust to maxClust
+for (centr in minClust:maxClust) {
+  i <- centr-(minClust-1) # relevels start as 1, and increases with centr
+  set.seed(11) # For reproducibility
+  km.out[i] <- list(kmeans(kmeansDat.t, centers = centr, nstart = 50))
+  sil.out[i] <- list(silhouette(km.out[[i]][[1]], dist(kmeansDat.t)))
+  # Used for plotting silhouette average widths
+  x[i] = centr  # value of k                                                                                                                                                                                                                                                                                                                                                             30455
+  y[i] = summary(sil.out[[i]])[[4]]  # Silhouette average width
+}
+library(ggplot2)
+ggplot(data = data.frame(x, y), aes(x, y)) + 
+  geom_point(size=3) + 
+  geom_line() +
+  xlab("Number of Cluster Centers") +
+  ylab("Silhouette Average Width") +
+  ggtitle("Silhouette Average Width as Cluster Center Varies")
+
