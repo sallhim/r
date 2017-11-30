@@ -241,7 +241,6 @@ df <-  program %>%
     Freq  = n()
   )
 
-
 plot_ly(df, y = ~Freq, x= ~Num, type = "bar")
 
 plot_ly(program, y = ~mem_id, x = ~act_sdate, type = "scatter", color = act_core)
@@ -286,10 +285,21 @@ program %>%
     Num = n()
   )
 
-#member as id
+#member as id  
 library(reshape2)
-member <- reshape(program, idvar = "mem_id", timevar = "act_sdate", direction = "wide")
+library(lubridate)
+program$year <- year(program$act_sdate)
+member$mem_id <- as.factor(member$mem_id)
+programM <- subset(program, select = c("mem_id", "year"))
+memberpro <- reshape(programM, idvar = "mem_id", timevar = "year", direction = "wide")
+memberpro <- dcast(programM, mem_id ~ year)
 head(member)
-member <- reshape(program, idvar="mem_id")
 unique(member$mem_id)
-table(is.na(member$mem_id) == TRUE)
+table(is.na(memberpro$mem_id) == TRUE)
+member <- read.csv("~/Downloads/member_statistic-20171115 - Sheet1.csv")
+memberM <- left_join(member, memberpro)
+
+write.csv(memberM,file = "~/Downloads/member_statistic-20171115 - Sheet2.csv")
+
+
+
