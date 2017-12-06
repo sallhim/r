@@ -278,6 +278,7 @@ program %>%
     Num = n()
   )
 
+
 program %>%
   filter(act_sdate > "2017-01-01" & act_sdate < "2018-01-01") %>%
   group_by(act_code) %>%
@@ -286,6 +287,7 @@ program %>%
   )
 
 #member as id  
+#member merge with program for maker project.
 library(reshape2)
 library(lubridate)
 program$year <- year(program$act_sdate)
@@ -301,5 +303,5 @@ memberM <- left_join(member, memberpro)
 
 write.csv(memberM,file = "~/Downloads/member_statistic-20171115 - Sheet2.csv")
 
-
+#
 
