@@ -248,7 +248,6 @@ df <-  program %>%
     Freq  = n()
   )
 
-
 plot_ly(df, y = ~Freq, x= ~Num, type = "bar")
 
 plot_ly(program, y = ~mem_id, x = ~act_sdate, type = "scatter", color = act_core)
@@ -286,6 +285,7 @@ program %>%
     Num = n()
   )
 
+
 program %>%
   filter(act_sdate > "2017-01-01" & act_sdate < "2018-01-01") %>%
   group_by(act_code) %>%
@@ -293,8 +293,53 @@ program %>%
     Num = n()
   )
 
-#member as id
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+#member as id  
+#member merge with program for maker project.
 library(reshape2)
+<<<<<<< HEAD:program2014.R
 head(member)
 summary(program)
 #member <- reshape(program, idvar="mem_id", timevar = "year", direction = "wide")
@@ -345,6 +390,10 @@ ob.tree = oblique.tree(formula = g~.,
                        oblique.splits = "only")
 plot(ob.tree);text(ob.tree)
 
+
+
+
+
 ##################
 ##longRPart
 library(longRPart)
@@ -353,6 +402,18 @@ data(pbkphData)
 pbkphData$Time=as.factor(pbkphData$Time)
 long.tree = longRPart(pbkph~Time,~age+gender,~1|Subject,pbkphData,R=corExp(form=~time))
 lrpTreePlot(long.tree, use.n=TRE, place="bottomright")
+
+
+
+
+
+
+
+
+
+
+
+
 
 ###############
 # PARTY package
@@ -399,4 +460,21 @@ ggplot(data = data.frame(x, y), aes(x, y)) +
   xlab("Number of Cluster Centers") +
   ylab("Silhouette Average Width") +
   ggtitle("Silhouette Average Width as Cluster Center Varies")
+=======
+library(lubridate)
+program$year <- year(program$act_sdate)
+member$mem_id <- as.factor(member$mem_id)
+programM <- subset(program, select = c("mem_id", "year"))
+memberpro <- reshape(programM, idvar = "mem_id", timevar = "year", direction = "wide")
+memberpro <- dcast(programM, mem_id ~ year)
+head(member)
+unique(member$mem_id)
+table(is.na(memberpro$mem_id) == TRUE)
+member <- read.csv("~/Downloads/member_statistic-20171115 - Sheet1.csv")
+memberM <- left_join(member, memberpro)
+
+write.csv(memberM,file = "~/Downloads/member_statistic-20171115 - Sheet2.csv")
+
+#
+>>>>>>> 8368aad45387ef52970fdee071967b42c8a1e347:program2014.R
 
