@@ -248,7 +248,6 @@ df <-  program %>%
     Freq  = n()
   )
 
-
 plot_ly(df, y = ~Freq, x= ~Num, type = "bar")
 
 plot_ly(program, y = ~mem_id, x = ~act_sdate, type = "scatter", color = act_core)
@@ -286,6 +285,7 @@ program %>%
     Num = n()
   )
 
+
 program %>%
   filter(act_sdate > "2017-01-01" & act_sdate < "2018-01-01") %>%
   group_by(act_code) %>%
@@ -293,8 +293,53 @@ program %>%
     Num = n()
   )
 
-#member as id
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+#member as id  
+#member merge with program for maker project.
 library(reshape2)
+<<<<<<< HEAD:program2014.R
 head(member)
 summary(program)
 #member <- reshape(program, idvar="mem_id", timevar = "year", direction = "wide")
@@ -345,6 +390,10 @@ ob.tree = oblique.tree(formula = g~.,
                        oblique.splits = "only")
 plot(ob.tree);text(ob.tree)
 
+
+
+
+
 ##################
 ##longRPart
 library(longRPart)
@@ -353,6 +402,18 @@ data(pbkphData)
 pbkphData$Time=as.factor(pbkphData$Time)
 long.tree = longRPart(pbkph~Time,~age+gender,~1|Subject,pbkphData,R=corExp(form=~time))
 lrpTreePlot(long.tree, use.n=TRE, place="bottomright")
+
+
+
+
+
+
+
+
+
+
+
+
 
 ###############
 # PARTY package
@@ -369,18 +430,21 @@ tr.pred = predict(ct, newdata=raw, type="prob")
 
 library(cluster) # Needed for silhouette function
 
-kmeansDat <- member[,]  # Extract only customer columns
-kmeansDat <- member[,-(1:1)]  # Extract only customer columns
-
+kmeansDat <- member[1:410,]  # Extract only customer columns
+kmeansDat <- member[1:410,-(1:1)]  # Extract only customer columns
+is.na(member$mem_id)
 kmeansDat.t <- t(kmeansDat)  # Get customers in rows and products in columns
-
+head(kmeansDat.t)
+head(member)
+tail(member)
+tail(kmeansDat)
 # Setup for k-means loop 
 km.out <- list()
 sil.out <- list()
 x <- vector()
 y <- vector()
-minClust <- 4      # Hypothesized minimum number of segments
-maxClust <- 52      # Hypothesized maximum number of segments
+minClust <- 2      # Hypothesized minimum number of segments
+maxClust <- 10      # Hypothesized maximum number of segments
 
 # Compute k-means clustering over various clusters, k, from minClust to maxClust
 for (centr in minClust:maxClust) {
@@ -390,7 +454,7 @@ for (centr in minClust:maxClust) {
   sil.out[i] <- list(silhouette(km.out[[i]][[1]], dist(kmeansDat.t)))
   # Used for plotting silhouette average widths
   x[i] = centr  # value of k                                                                                                                                                                                                                                                                                                                                                             30455
-  y[i] = summary(sil.out[[i]])[[4]]  # Silhouette average width
+  y[i] = summary(sil.out[[i]])[[2]]  # Silhouette average width
 }
 library(ggplot2)
 ggplot(data = data.frame(x, y), aes(x, y)) + 
@@ -399,4 +463,72 @@ ggplot(data = data.frame(x, y), aes(x, y)) +
   xlab("Number of Cluster Centers") +
   ylab("Silhouette Average Width") +
   ggtitle("Silhouette Average Width as Cluster Center Varies")
+
+# Get customer names that are in each segment ----------------------------------
+
+# Get attributes of optimal k-means output
+maxSilRow <- which.max(y)          # Row number of max silhouette value
+optimalClusters <- x[maxSilRow]    # Number of clusters
+km.out.best <- km.out[[maxSilRow]] # k-means output of best cluster
+
+# Create list of customer names for each cluster
+clusterNames <- list()
+clusterList <- list()
+for (clustr in 1:optimalClusters) {
+  clusterNames[clustr] <- paste0("X", clustr)
+  clusterList[clustr] <- list(
+    names(
+      km.out.best$cluster[km.out.best$cluster == clustr]
+    )
+  )
+}
+names(clusterList) <- clusterNames
+
+print(clusterList)
+
+# Get attributes of optimal k-means output
+#maxSilRow <- which.max(y)          # Row number of max silhouette value
+maxSilRow <- 5
+
+optimalClusters <- x[maxSilRow]    # Number of clusters
+km.out.best <- km.out[[maxSilRow]] # k-means output of best cluster
+
+# Create list of customer names for each cluster
+clusterNames <- list()
+clusterList <- list()
+for (clustr in 1:optimalClusters) {
+  clusterNames[clustr] <- paste0("X", clustr)
+  clusterList[clustr] <- list(
+    names(
+      km.out.best$cluster[km.out.best$cluster == clustr]
+    )
+  )
+}
+names(clusterList) <- clusterNames
+
+print(clusterList)
+
+
+  
+  
+
+
+  
+  
+library(lubridate)
+program$year <- year(program$act_sdate)
+member$mem_id <- as.factor(member$mem_id)
+programM <- subset(program, select = c("mem_id", "year"))
+memberpro <- reshape(programM, idvar = "mem_id", timevar = "year", direction = "wide")
+memberpro <- dcast(programM, mem_id ~ year)
+head(member)
+unique(member$mem_id)
+table(is.na(memberpro$mem_id) == TRUE)
+member <- read.csv("~/Downloads/member_statistic-20171115 - Sheet1.csv")
+memberM <- left_join(member, memberpro)
+
+write.csv(memberM,file = "~/Downloads/member_statistic-20171115 - Sheet2.csv")
+
+#
+
 
