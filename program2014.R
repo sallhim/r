@@ -463,6 +463,7 @@ ggplot(data = data.frame(x, y), aes(x, y)) +
   xlab("Number of Cluster Centers") +
   ylab("Silhouette Average Width") +
   ggtitle("Silhouette Average Width as Cluster Center Varies")
+<<<<<<< HEAD
 
 # Get customer names that are in each segment ----------------------------------
 
@@ -515,6 +516,9 @@ print(clusterList)
 
   
   
+=======
+=======
+>>>>>>> e2cb2154da6f29c00045e3041d93b9a8c9f4e170
 library(lubridate)
 program$year <- year(program$act_sdate)
 member$mem_id <- as.factor(member$mem_id)
@@ -530,5 +534,9 @@ memberM <- left_join(member, memberpro)
 write.csv(memberM,file = "~/Downloads/member_statistic-20171115 - Sheet2.csv")
 
 #
+<<<<<<< HEAD
 
+=======
+>>>>>>> 8368aad45387ef52970fdee071967b42c8a1e347:program2014.R
+>>>>>>> e2cb2154da6f29c00045e3041d93b9a8c9f4e170
 
